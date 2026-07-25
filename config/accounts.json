@@ -1,0 +1,75 @@
+{
+  "_readme": [
+    "기사에 등장하는 기관/인물을 인스타그램 계정으로 태그하기 위한 매핑입니다.",
+    "여기에 등록된 이름만 캡션과 아웃트로 카드에 @멘션됩니다.",
+    "auto:true 는 실행 중 웹 검색으로 자동 등록된 항목이며 source에 확인 근거 URL이 남습니다.",
+    "잘못 붙은 계정을 발견하면 해당 항목을 지우거나 handle을 고치세요.",
+    "kind: org | person, aliases: 기사에서 달리 표기될 수 있는 이름들"
+  ],
+  "accounts": [
+    {
+      "name": "소셜임팩트뉴스",
+      "handle": "soimnews",
+      "kind": "org",
+      "aliases": ["소셜임팩트뉴스=", "SocialImpactNews", "소임뉴"],
+      "source": "발행 대상 계정(운영자 확인)"
+    },
+    {
+      "name": "열고닫기",
+      "handle": "opcl.official",
+      "kind": "org",
+      "aliases": ["도도한콜라보", "도도한콜라보㈜", "도도한콜라보(주)", "열고닫기 페이지"],
+      "source": "https://www.instagram.com/opcl.official/",
+      "note": "도도한콜라보가 운영하는 청년정책 플랫폼 계정(운영자 지정)"
+    },
+    {
+      "name": "수퍼빈",
+      "handle": "superbin_official",
+      "kind": "org",
+      "aliases": ["SuperBin", "수퍼빈(주)"],
+      "source": "https://www.instagram.com/superbin_official/"
+    },
+    {
+      "name": "헬로우뮤지움",
+      "handle": "hellomuseum",
+      "kind": "org",
+      "aliases": ["헬로우뮤지움 어린이미술관", "HELLOMUSEUM"],
+      "source": "https://www.instagram.com/hellomuseum/"
+    },
+    {
+      "name": "MYSC",
+      "handle": "mysc.official",
+      "kind": "org",
+      "aliases": ["엠와이소셜컴퍼니", "엠와이소셜컴퍼니(주)"],
+      "source": "https://www.instagram.com/mysc.official/"
+    },
+    {
+      "name": "월드비전",
+      "handle": "worldvisionkorea",
+      "kind": "org",
+      "aliases": ["한국월드비전", "World Vision"],
+      "source": "https://www.instagram.com/worldvisionkorea/"
+    },
+    {
+      "name": "제주창조경제혁신센터",
+      "handle": "jeju_ccei",
+      "kind": "org",
+      "aliases": ["제주센터", "제주창조경제혁신센터(제주CCEI)"],
+      "source": "https://www.instagram.com/jeju_ccei/"
+    },
+    {
+      "name": "제주공익활동지원센터",
+      "handle": "jejugongik",
+      "kind": "org",
+      "aliases": ["제주공익활동지원센터(제주NPO)", "제주NPO센터"],
+      "source": "https://www.instagram.com/jejugongik/"
+    },
+    {
+      "name": "사회적가치연구원",
+      "handle": "cses.official",
+      "kind": "org",
+      "aliases": ["CSES", "SK 사회적가치연구원"],
+      "source": "https://www.instagram.com/cses.official/"
+    }
+  ]
+}

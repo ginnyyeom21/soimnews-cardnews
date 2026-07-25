@@ -1,0 +1,10 @@
+.venv/
+__pycache__/
+*.pyc
+
+# 토큰이 들어있는 실제 설정 파일 (settings.example.env만 공유)
+config/settings.env
+
+# 실행 결과물과 상태
+out/
+state/
