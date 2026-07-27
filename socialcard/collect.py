@@ -220,6 +220,8 @@ def collect_from_csv(path: Path, settings: Settings, limit: Optional[int] = None
                     url=row["url"].strip(),
                     content=row["content"].strip(),
                     published_at=(row.get("published_at") or "").strip(),
+                    # 선택 컬럼. 커버의 섹션 배지에 쓰인다(없으면 기본값으로 렌더링).
+                    section=(row.get("section") or "").strip(),
                 )
             )
 

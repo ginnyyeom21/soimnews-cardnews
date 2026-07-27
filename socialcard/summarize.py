@@ -544,6 +544,12 @@ def apply_directory(
         target = exclude_handle if exclude_handle.startswith("@") else "@" + exclude_handle
         mentions = [m for m in mentions if m.handle.lower() != target.lower()]
 
+    # 편집자가 이 기사에서만 빼기로 한 계정. 계정 자동 등록 뒤 이 함수가 다시 호출돼도
+    # 제외가 풀리지 않도록 CardNews에 남은 목록을 기준으로 매번 걸러낸다.
+    if cardnews.excluded_handles:
+        dropped = {h.lstrip("@").lower() for h in cardnews.excluded_handles}
+        mentions = [m for m in mentions if m.handle.lstrip("@").lower() not in dropped]
+
     cardnews.mentions, cardnews.unmatched_entities = mentions, unmatched
     return cardnews
 

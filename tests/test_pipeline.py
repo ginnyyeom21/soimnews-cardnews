@@ -822,6 +822,34 @@ class TestOverrides(PipelineTestCase):
         self.assertEqual(load_overrides(path).apply(cardnews), [])
         self.assertEqual(len(cardnews.cards), before)
 
+    def test_exclude_tags_drops_only_this_article(self) -> None:
+        """계정 매핑은 그대로 두고 이 기사에서만 태그를 뺀다."""
+        from socialcard.accounts import AccountDirectory
+        from socialcard.overrides import load_overrides
+        from socialcard.summarize import apply_directory, build_cardnews
+
+        directory = AccountDirectory([
+            {"name": "현신경영연구소", "handle": "bk.dia", "kind": "org"},
+            {"name": "MYSC", "handle": "mysc.official", "kind": "org"},
+        ])
+        article = collect_from_csv(SAMPLE_CSV, self.settings, limit=1)[0]
+        article.content += "\n현신경영연구소와 MYSC가 함께 참여했다."
+        cardnews = build_cardnews(article, self.settings, directory)
+        self.assertIn("@mysc.official", cardnews.mention_line())
+
+        path = self._write([
+            {"article_id": article.article_id, "exclude_tags": "mysc.official"}
+        ])
+        self.assertEqual(load_overrides(path).apply(cardnews), ["exclude_tags"])
+        self.assertNotIn("@mysc.official", cardnews.mention_line())
+        self.assertIn("@bk.dia", cardnews.mention_line())
+
+        # 계정 자동 등록 뒤 태그를 다시 계산해도 제외가 풀리면 안 된다.
+        apply_directory(cardnews, directory, exclude_handle=self.settings.brand_handle)
+        self.assertNotIn("@mysc.official", cardnews.mention_line())
+        # 매핑 자체는 남아 있어야 다른 기사에서 태그된다.
+        self.assertTrue(directory.resolve(["MYSC"])[0])
+
     def test_template_does_not_duplicate_rows(self) -> None:
         """매일 --from-run 을 돌려도 이미 손본 줄을 덮어쓰지 않는다."""
         from socialcard.overrides import write_template

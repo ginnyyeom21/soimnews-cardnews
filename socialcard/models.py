@@ -59,6 +59,9 @@ class CardNews:
     hashtags: List[str] = field(default_factory=list)
     entities: List[str] = field(default_factory=list)  # 기사에서 뽑은 기관/인물 이름
     mentions: List[Mention] = field(default_factory=list)
+    # 이 기사에서만 태그하지 않을 계정. 매핑에는 남겨두고 이 건에서만 뺀다
+    # (예: 본문에 스쳐 지나간 기관이라 알림을 보내는 게 어색한 경우).
+    excluded_handles: List[str] = field(default_factory=list)
     unmatched_entities: List[str] = field(default_factory=list)
     # 커버에 적용된 후킹 유형. AI/폴백이 고른 deadline·scale·stake·scene,
     # 사람이 덮어쓴 경우 manual, 어느 것도 적용하지 못했으면 빈 값.

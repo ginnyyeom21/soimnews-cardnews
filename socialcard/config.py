@@ -61,7 +61,10 @@ class Settings:
     ai_max_retries: int = 2
 
     # 카드 렌더링 — 색상은 소임뉴 로고에서 추출한 값
-    card_size: int = 1080
+    card_size: int = 1080  # 가로
+    # 세로. 인스타그램 프로필 격자가 4:5로 잘라 보여주므로 처음부터 4:5로 만든다.
+    # 정사각형(1080)으로 두면 격자에서 좌우가 각각 108px씩 잘려 글자가 사라진다.
+    card_height: int = 1350
     body_card_count: int = 3
     brand_name: str = "소셜임팩트뉴스"
     brand_email: str = "press@soimnews.net"

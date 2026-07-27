@@ -26,7 +26,11 @@ log = logging.getLogger(__name__)
 
 FIELDS = ("headline", "hook", "read_more")  # 덮어쓸 문구
 DROP = "drop_cards"  # 빼버릴 본문 카드 번호(예: "3" 또는 "3,4")
-HEADER = ("article_id", "url", "headline", "hook", "read_more", DROP)
+EXCLUDE = "exclude_tags"  # 이 기사에서만 태그하지 않을 계정(예: "mysc.official")
+# 본문 카드를 통째로 다시 쓰는 통로. '|'로 카드를 나누고, '::' 앞은 킥커(생략 가능).
+#   무슨 일이::협약을 맺었다.|핵심은::15개사를 뽑는다.
+BODY = "body_cards"
+HEADER = ("article_id", "url", "headline", "hook", "read_more", BODY, DROP, EXCLUDE)
 
 
 class OverrideBook:
@@ -67,6 +71,33 @@ class OverrideBook:
             if "headline" in changed or "hook" in changed:
                 cardnews.hook_type = "manual"
 
+        # 본문 카드를 편집자가 직접 쓴 것으로 갈아끼운다. 커버·아웃트로는 그대로 둔다.
+        raw = row.get(BODY, "")
+        if raw.strip():
+            from .models import Card
+            from .summarize import (
+                DEFAULT_KICKERS, MAX_CARD_BODY, MAX_KICKER,
+                _clip_phrase, _clip_sentence, find_highlight,
+            )
+
+            bodies: List[Card] = []
+            for i, spec in enumerate([s.strip() for s in raw.split("|") if s.strip()]):
+                kicker, sep, text = spec.partition("::")
+                if not sep:
+                    kicker, text = DEFAULT_KICKERS[i % len(DEFAULT_KICKERS)], spec
+                text = _clip_sentence(text.strip(), MAX_CARD_BODY)
+                bodies.append(Card(
+                    kind="body",
+                    title=_clip_phrase(kicker.strip(), MAX_KICKER),
+                    body=text,
+                    highlight=find_highlight(text),
+                ))
+            if bodies:
+                cardnews.cards = [cardnews.cards[0]] + bodies + [cardnews.cards[-1]]
+                for i, card in enumerate(cardnews.cards, start=1):
+                    card.index = i
+                changed.append(BODY)
+
         # 중복되는 본문 카드를 빼는 통로. 커버와 아웃트로는 구조상 뺄 수 없다.
         drop = {int(n) for n in re.findall(r"\d+", row.get(DROP, ""))}
         if drop:
@@ -77,6 +108,16 @@ class OverrideBook:
                 for i, card in enumerate(kept, start=1):
                     card.index = i
                 changed.append(DROP)
+
+        # 계정 매핑은 그대로 두고 이 기사에서만 태그를 뺀다.
+        excluded = [h.strip().lstrip("@") for h in row.get(EXCLUDE, "").split(",") if h.strip()]
+        if excluded:
+            cardnews.excluded_handles = excluded
+            dropped = {h.lower() for h in excluded}
+            kept = [m for m in cardnews.mentions if m.handle.lstrip("@").lower() not in dropped]
+            if len(kept) < len(cardnews.mentions):
+                cardnews.mentions = kept
+                changed.append(EXCLUDE)
 
         return changed
 
@@ -90,12 +131,12 @@ def load_overrides(path: Path) -> OverrideBook:
     with path.open(encoding="utf-8-sig", newline="") as fh:
         reader = csv.DictReader(fh)
         fields = set(reader.fieldnames or [])
-        if not fields & set(FIELDS + (DROP,)):
+        if not fields & set(FIELDS + (BODY, DROP, EXCLUDE)):
             log.warning("덮어쓰기 파일에 %s 컬럼이 없습니다: %s", "/".join(FIELDS), path)
             return OverrideBook()
         for raw in reader:
             row = {k: (v or "").strip() for k, v in raw.items() if k}
-            if not any(row.get(f) for f in FIELDS + (DROP,)):
+            if not any(row.get(f) for f in FIELDS + (BODY, DROP, EXCLUDE)):
                 continue  # 값이 하나도 없는 줄은 아직 안 채운 템플릿이다
             for key in (row.get("url"), row.get("article_id")):
                 if key:

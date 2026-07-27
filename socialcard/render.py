@@ -1,4 +1,4 @@
-"""카드뉴스 이미지 생성(1080x1080 카러셀).
+"""카드뉴스 이미지 생성(1080x1350, 4:5 카러셀).
 
 색상과 로고는 소임뉴 로고에서 가져왔다(에메랄드 #00A76B, 차콜 #3C3C3C, 라이트 #89F394).
 줄바꿈은 socialcard.typeset의 구문 단위 조판을 쓴다.
@@ -41,8 +41,10 @@ _font_cache = {}
 _logo_cache = {}
 
 MARGIN = 88
-FOOTER_Y = 968  # 바이라인 기준선
-RULE_Y = 916  # 푸터 위 구분선
+# 푸터는 캔버스 아래에 붙인다. 세로 길이가 바뀌어도 위쪽 요소는 그대로 두고
+# 늘어난 공간이 본문 영역으로 돌아가게 하기 위해, 바닥에서의 거리로 정의한다.
+FOOTER_FROM_BOTTOM = 112  # 바이라인 기준선
+RULE_FROM_BOTTOM = 164  # 푸터 위 구분선
 
 
 def _hex_to_rgb(value: str) -> Tuple[int, int, int]:
@@ -158,11 +160,12 @@ def _block_height(font: ImageFont.FreeTypeFont, lines: Sequence[str], line_gap: 
     return int(font.size * line_gap) * max(0, len(lines) - 1) + int(font.size * 1.2)
 
 
-def _gradient(size: int, top: Sequence[int], bottom: Sequence[int]) -> Image.Image:
-    image = Image.new("RGB", (size, size), tuple(top))
+def _gradient(size: int, top: Sequence[int], bottom: Sequence[int], height: Optional[int] = None) -> Image.Image:
+    height = height or size
+    image = Image.new("RGB", (size, height), tuple(top))
     draw = ImageDraw.Draw(image)
-    for y in range(size):
-        draw.line([(0, y), (size, y)], fill=_mix(top, bottom, y / float(size - 1)))
+    for y in range(height):
+        draw.line([(0, y), (size, y)], fill=_mix(top, bottom, y / float(height - 1)))
     return image
 
 
@@ -198,8 +201,11 @@ def _footer(
     total: int,
     accent,
     size: int,
+    height: int,
 ) -> None:
-    """구분선 + 바이라인 + 진행 표시."""
+    """구분선 + 바이라인 + 진행 표시. 캔버스 아래에 붙는다."""
+    RULE_Y = height - RULE_FROM_BOTTOM
+    FOOTER_Y = height - FOOTER_FROM_BOTTOM
     draw.line([(MARGIN, RULE_Y), (size - MARGIN, RULE_Y)], fill=rule_color, width=2)
 
     name_font = load_font("bold", 27)
@@ -222,8 +228,11 @@ def _footer(
 def render_cardnews(cardnews: CardNews, out_dir: Path, settings: Settings) -> List[Path]:
     """카드뉴스 한 세트를 PNG 파일들로 렌더링하고 경로를 반환한다."""
     out_dir.mkdir(parents=True, exist_ok=True)
-    size = settings.card_size
+    size = settings.card_size            # 가로
+    height = settings.card_height or size  # 세로(기본 4:5)
     text_width = size - MARGIN * 2
+    RULE_Y = height - RULE_FROM_BOTTOM
+    FOOTER_Y = height - FOOTER_FROM_BOTTOM
 
     brand = _hex_to_rgb(settings.brand_color)  # 에메랄드
     accent = _hex_to_rgb(settings.accent_color)  # 라이트 그린
@@ -242,12 +251,12 @@ def render_cardnews(cardnews: CardNews, out_dir: Path, settings: Settings) -> Li
 
     for card in cardnews.cards:
         if card.kind == "cover":
-            image = _gradient(size, brand, brand_deep)
+            image = _gradient(size, brand, brand_deep, height)
             draw = ImageDraw.Draw(image)
 
             # 오른쪽 아래 워터마크 링 — 여백을 심심하지 않게 하는 최소한의 장식
             ring = _mix(brand_deep, (255, 255, 255), 0.08)
-            draw.ellipse([size - 210, size - 250, size + 260, size + 220], outline=ring, width=3)
+            draw.ellipse([size - 210, height - 250, size + 260, height + 220], outline=ring, width=3)
 
             logo = load_logo(logo_path, 92)
             if logo is not None:
@@ -276,16 +285,19 @@ def render_cardnews(cardnews: CardNews, out_dir: Path, settings: Settings) -> Li
                 if title_h + gap + hook_h <= budget:
                     break
 
-            block_top = max(top_limit, RULE_Y - 52 - (title_h + gap + hook_h))
+            # 배지 아래 ~ 푸터 위 공간의 가운데에 둔다. 아래에 붙여두면 4:5처럼
+            # 세로가 길어졌을 때 늘어난 높이가 전부 위쪽 빈 공간으로 남는다.
+            block_h = title_h + gap + hook_h
+            block_top = top_limit + max(0, (RULE_Y - 52 - top_limit - block_h) // 2)
             y = _draw_lines(draw, title_lines, (MARGIN, block_top), title_font, (255, 255, 255), 1.3)
 
             draw.rectangle([MARGIN, y + 32, MARGIN + 88, y + 38], fill=accent)
             _draw_lines(draw, hook_lines, (MARGIN, y + gap), hook_font, mint, 1.55)
 
-            _footer(draw, settings, on_brand_muted, _mix(brand, brand_deep, 0.5), card.index, total, accent, size)
+            _footer(draw, settings, on_brand_muted, _mix(brand, brand_deep, 0.5), card.index, total, accent, size, height)
 
         elif card.kind == "body":
-            image = Image.new("RGB", (size, size), paper)
+            image = Image.new("RGB", (size, height), paper)
             draw = ImageDraw.Draw(image)
             draw.rectangle([0, 0, size, 10], fill=brand)
 
@@ -316,10 +328,10 @@ def render_cardnews(cardnews: CardNews, out_dir: Path, settings: Settings) -> Li
             body_top = area_top + max(0, (area_bottom - area_top - block_h) // 2)
             _draw_lines(draw, body_lines, (MARGIN, body_top), body_font, ink, 1.62)
 
-            _footer(draw, settings, ink_muted, hairline, card.index, total, brand, size)
+            _footer(draw, settings, ink_muted, hairline, card.index, total, brand, size, height)
 
         else:  # outro
-            image = _gradient(size, _shade(ink, 1.02), _shade(ink, 0.78))
+            image = _gradient(size, _shade(ink, 1.02), _shade(ink, 0.78), height)
             draw = ImageDraw.Draw(image)
 
             title_font, title_lines = fit_text(draw, card.title, "bold", text_width, 3, 66, 46)
@@ -369,7 +381,7 @@ def render_cardnews(cardnews: CardNews, out_dir: Path, settings: Settings) -> Li
 
             _footer(
                 draw, settings, _mix(ink, paper, 0.55), _mix(ink, paper, 0.2),
-                card.index, total, accent, size,
+                card.index, total, accent, size, height,
             )
 
         path = out_dir / "{}_{:02d}.png".format(cardnews.article.article_id, card.index)
