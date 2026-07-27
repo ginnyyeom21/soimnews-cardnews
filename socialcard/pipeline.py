@@ -128,6 +128,10 @@ def run_pipeline(
             log.warning("%s", report.warnings[-1])
 
         directory = load_directory(settings.accounts_path)
+        if directory.load_error:
+            # 로그로만 남기면 묻힌다. 쉼표 하나로 태그 전체가 조용히 꺼지는 상황이라 요약에 올린다.
+            report.warnings.append(directory.load_error)
+            log.warning("%s", directory.load_error)
         overrides = load_overrides(settings.overrides_path)
         resolver: Optional[AccountResolver] = None
         if resolve_accounts and settings.account_auto_resolve and settings.anthropic_api_key:

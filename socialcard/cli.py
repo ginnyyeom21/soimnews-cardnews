@@ -277,6 +277,11 @@ def cmd_doctor(args: argparse.Namespace) -> int:
 
     directory = load_directory(settings.accounts_path)
     print("  등록 계정 {}건 ({})".format(len(directory), settings.accounts_path))
+    if directory.load_error:
+        ok = False
+        print("  ✗ {}".format(directory.load_error))
+        print("    JSON 문법을 확인하세요. 항목 사이 쉼표 하나가 빠져도 전체가 무시됩니다.")
+        print("    손으로 고치는 대신 accounts 명령으로 추가하면 이런 오류가 없습니다.")
 
     if not args.offline:
         print("■ RSS 연결")

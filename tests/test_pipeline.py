@@ -640,6 +640,9 @@ class TestCardContentQuality(PipelineTestCase):
         self.assertEqual(find_highlight("오는 9월 5일부터 6일까지 열린다"), "9월 5일")
         self.assertEqual(find_highlight("약 15개 기업을 모집한다"), "15개")
         self.assertEqual(find_highlight("수익금 전액을 돌려준다"), "")
+        # 만·억이 낀 수는 앞부터 잡아야 한다. 뒷자리만 잡으면 금액이 틀린다.
+        self.assertEqual(find_highlight("정가 1만 2000원의 잡지를 판다"), "1만 2000원")
+        self.assertEqual(find_highlight("누적 수익은 63억 원에 달한다"), "63억 원")
 
     def test_asides_are_stripped_for_readability(self) -> None:
         from socialcard.summarize import strip_asides
@@ -886,6 +889,48 @@ class TestOverrides(PipelineTestCase):
         )
         self.assertEqual(data["headline"], "손으로 쓴 커버")
         self.assertEqual(data["cards"][0]["title"], "손으로 쓴 커버")
+
+
+class TestBrokenAccountsFile(PipelineTestCase):
+    """쉼표 하나로 태그 전체가 조용히 꺼지는 일이 없도록."""
+
+    def _broken(self) -> Path:
+        path = Path(self.tmp) / "accounts.json"
+        # 두 항목 사이 쉼표 누락 — 손으로 편집할 때 가장 흔한 실수
+        path.write_text(
+            '{"accounts": [\n'
+            '  {"name": "빅이슈코리아", "handle": "bigissuekorea", "kind": "org"}\n'
+            '  {"name": "수퍼빈", "handle": "superbin_official", "kind": "org"}\n'
+            ']}\n',
+            encoding="utf-8",
+        )
+        return path
+
+    def test_load_error_is_reported_not_swallowed(self) -> None:
+        from socialcard.accounts import load_directory
+
+        directory = load_directory(self._broken())
+        self.assertEqual(len(directory), 0)
+        self.assertTrue(directory.load_error, "깨진 이유가 남아 있어야 한다")
+        self.assertIn("accounts.json", directory.load_error)
+
+    def test_pipeline_surfaces_the_error(self) -> None:
+        self.settings.accounts_path = self._broken()
+        report = run_pipeline(
+            self.settings, dry_run=True, source="csv", csv_path=SAMPLE_CSV,
+            limit=1, resolve_accounts=False,
+        )
+        self.assertTrue(
+            any("계정 매핑" in w for w in report.warnings),
+            "실행 요약에 경고가 올라와야 한다: {}".format(report.warnings),
+        )
+
+    def test_valid_file_has_no_error(self) -> None:
+        from socialcard.accounts import load_directory
+
+        directory = load_directory(PROJECT / "config" / "accounts.json")
+        self.assertEqual(directory.load_error, "")
+        self.assertGreater(len(directory), 0)
 
 
 class TestRuleFallbackHook(PipelineTestCase):

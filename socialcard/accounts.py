@@ -35,8 +35,16 @@ def normalize(name: str) -> str:
 
 
 class AccountDirectory:
-    def __init__(self, entries: Sequence[Dict[str, Any]], path: Optional[Path] = None):
+    def __init__(
+        self,
+        entries: Sequence[Dict[str, Any]],
+        path: Optional[Path] = None,
+        load_error: str = "",
+    ):
         self.path = path
+        # 파일이 깨져 매핑이 통째로 무시된 경우의 사유. 로그만으로는 눈에 띄지 않아
+        # 실행 요약과 doctor에서 드러내기 위해 들고 다닌다(쉼표 하나로 전체가 무효화된다).
+        self.load_error = load_error
         self._entries: List[Dict[str, Any]] = []
         self._index: Dict[str, Mention] = {}
         for entry in entries:
@@ -127,12 +135,14 @@ def load_directory(path: Path) -> AccountDirectory:
     try:
         data = json.loads(path.read_text(encoding="utf-8"))
     except json.JSONDecodeError as exc:
-        log.warning("계정 매핑 파일 파싱 실패(%s): %s. 멘션 없이 진행합니다.", path, exc)
-        return AccountDirectory([], path)
+        reason = "계정 매핑 파일이 깨져 태그가 모두 비활성화됐습니다({}): {}".format(path.name, exc)
+        log.warning("%s", reason)
+        return AccountDirectory([], path, load_error=reason)
     entries = data.get("accounts", []) if isinstance(data, dict) else data
     if not isinstance(entries, list):
-        log.warning("계정 매핑 형식이 올바르지 않습니다(%s).", path)
-        return AccountDirectory([], path)
+        reason = "계정 매핑 형식이 올바르지 않습니다({}).".format(path.name)
+        log.warning("%s", reason)
+        return AccountDirectory([], path, load_error=reason)
     return AccountDirectory(entries, path)
 
 

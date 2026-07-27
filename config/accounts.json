@@ -76,7 +76,14 @@
       "handle": "bkim_dia",
       "kind": "org",
       "aliases": ["김별이"],
-      "source": "https://www.instagram.com/cses.official/"
+      "source": "https://www.instagram.com/bkim_dia/"
+    },
+     {
+      "name": "빅이슈코리아",
+      "handle": "bigissuekorea",
+      "kind": "org",
+      "aliases": ["빅이슈", "홈리스"],
+      "source": "https://www.instagram.com/bigissuekorea/"
     }
   ]
 }
