@@ -1,26 +1,16 @@
 {
-  "run_id": "preflight",
+  "run_id": "run-20260727-112934",
   "status": "success",
   "mode": "dry-run",
   "source": "csv",
-  "started_at": "2026-07-27T11:29:04+09:00",
-  "collected": 2,
+  "started_at": "2026-07-27T11:29:34+09:00",
+  "collected": 1,
   "skipped_duplicate": 0,
-  "processed": 2,
+  "processed": 1,
   "published": 0,
   "failed": 0,
   "error": null,
   "items": [
-    {
-      "article_url": "https://www.socialimpactnews.net/news/articleView.html?idxno=6833",
-      "status": "dry_run",
-      "media_id": null,
-      "permalink": null,
-      "detail": "카드 4장 생성, 계정 태그 1건 예정, 실제 발행 생략",
-      "title": "충남 청년정책, 전국 플랫폼 ‘열고닫기’로 만난다",
-      "headline": "충남 청년정책, 전국에서 검색된다",
-      "cards": 4
-    },
     {
       "article_url": "https://www.socialimpactnews.net/news/articleView.html?idxno=6882",
       "status": "dry_run",
@@ -37,20 +27,16 @@
     "라이더로그",
     "라이더로그(RiderLog)",
     "별따러가자-예산군",
-    "원규희",
-    "충남 청년정책",
-    "충남청년센터",
     "한국도로교통공단"
   ],
   "resolved_accounts": [],
   "overridden": [
-    "SIN6833",
     "SIN6882"
   ],
   "linkinbio_page": "/Users/yg/소셜임팩트뉴스 인스타그램 자동화 업로드/out/linkinbio/index.html",
   "warnings": [
     "ANTHROPIC_API_KEY가 없어 폴백 요약으로 실행했습니다. 기사에 있는 사실만 커버로 끌어올리므로 모집·공모 기사 외에는 헤드라인이 기사 제목에 가깝습니다."
   ],
-  "out_dir": "/Users/yg/소셜임팩트뉴스 인스타그램 자동화 업로드/out/preflight",
+  "out_dir": "/Users/yg/소셜임팩트뉴스 인스타그램 자동화 업로드/out/run-20260727-112934",
   "exit_code": 0
 }
