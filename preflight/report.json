@@ -3,49 +3,36 @@
   "status": "success",
   "mode": "dry-run",
   "source": "csv",
-  "started_at": "2026-07-27T11:29:04+09:00",
-  "collected": 2,
+  "started_at": "2026-07-27T11:36:12+09:00",
+  "collected": 1,
   "skipped_duplicate": 0,
-  "processed": 2,
+  "processed": 1,
   "published": 0,
   "failed": 0,
   "error": null,
   "items": [
     {
-      "article_url": "https://www.socialimpactnews.net/news/articleView.html?idxno=6833",
+      "article_url": "https://www.socialimpactnews.net/news/articleView.html?idxno=6845",
       "status": "dry_run",
       "media_id": null,
       "permalink": null,
-      "detail": "카드 4장 생성, 계정 태그 1건 예정, 실제 발행 생략",
-      "title": "충남 청년정책, 전국 플랫폼 ‘열고닫기’로 만난다",
-      "headline": "충남 청년정책, 전국에서 검색된다",
-      "cards": 4
-    },
-    {
-      "article_url": "https://www.socialimpactnews.net/news/articleView.html?idxno=6882",
-      "status": "dry_run",
-      "media_id": null,
-      "permalink": null,
-      "detail": "카드 6장 생성, 계정 태그 0건 예정, 실제 발행 생략",
-      "title": "별따러가자-예산군, AI 이동안전망 효과 확인…고령 이륜차 치명사고 67% 감소",
-      "headline": "고령 이륜차 치명사고 67% 감소",
+      "detail": "카드 6장 생성, 계정 태그 1건 예정, 실제 발행 생략",
+      "title": "[인터뷰] 비영리 조직의 ‘회사 밖 경영관리팀’, 현신경영연구소",
+      "headline": "비영리 조직의 ‘회사 밖 경영관리팀’",
       "cards": 6
     }
   ],
   "unmatched_entities": [
-    "공동",
-    "라이더로그",
-    "라이더로그(RiderLog)",
-    "별따러가자-예산군",
-    "원규희",
-    "충남 청년정책",
-    "충남청년센터",
-    "한국도로교통공단"
+    "경영관리",
+    "공익법인",
+    "대표의 페이스메이커",
+    "사단·재단법인",
+    "성장하면",
+    "조직의 언어"
   ],
   "resolved_accounts": [],
   "overridden": [
-    "SIN6833",
-    "SIN6882"
+    "SIN6845"
   ],
   "linkinbio_page": "/Users/yg/소셜임팩트뉴스 인스타그램 자동화 업로드/out/linkinbio/index.html",
   "warnings": [
