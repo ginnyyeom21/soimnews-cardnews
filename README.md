@@ -73,11 +73,14 @@ out/run-20260725-110000/SIN6833_01.png
 못합니다. [publish.sh](scripts/publish.sh)는 순서를 강제합니다.
 
 ```
-① 렌더링(발행 없음) → ② 이미지 저장소 push → ③ 공개 URL이 HTTP 200인지 확인 → ④ 발행
+① 렌더링(발행 없음) → ② 이미지 push → ③ 공개 URL이 HTTP 200인지 확인 → ④ 발행 → ⑤ 링크인바이오 push
 ```
 
 ③에서 이미지가 아직 공개되지 않았으면 **발행하지 않고 멈춥니다.** 절반만 올라간 게시물이 생기는
 것보다 낫기 때문입니다. `--limit 1` 같은 옵션은 그대로 넘어갑니다.
+
+⑤가 따로 있는 이유는 **링크인바이오가 발행 이력에서 만들어지기 때문**입니다. ④가 끝나야 방금 올린
+기사가 목록에 들어가므로, ②의 push만으로는 공개 페이지가 한 실행씩 뒤처집니다.
 
 자주 쓰는 옵션:
 
@@ -261,9 +264,26 @@ SIN6833,,충남 청년정책 전국에서 검색된다,충남청년포털과 ‘
 ```
 
 [linkinbio.py](socialcard/linkinbio.py)가 발행 이력에서 최근 기사를 읽어 매 실행마다
-`out/linkinbio/index.html`을 다시 만듭니다(모바일·다크모드 대응). 이 폴더를 카드 이미지와 같은
-정적 호스팅에 올리고, 그 주소를 `LINKINBIO_BASE_URL`에 적은 뒤 인스타그램 프로필 바이오에 한 번만
-걸어두면 됩니다. 캡션에는 기사 원문 URL과 링크 페이지 주소가 함께 들어갑니다.
+`out/linkinbio/index.html`을 다시 만듭니다(모바일·다크모드 대응). 노출 건수는 `LINKINBIO_LIMIT`
+(현재 5)입니다. **새 기사를 발행하면 목록이 자동으로 바뀌므로 프로필 링크는 한 번만 걸어두면 됩니다.**
+
+`LINKINBIO_BASE_URL`에 페이지 주소를 적으면 캡션에도 `오늘의 기사 모음: <주소>`가 함께 들어갑니다.
+
+### 호스팅 — 이미지는 raw, 링크 페이지는 Pages
+
+카드 이미지(PNG)와 링크 페이지(HTML)는 **같은 저장소를 쓰지만 서빙 경로가 다릅니다.**
+
+| 대상 | 주소 | 이유 |
+|---|---|---|
+| 카드 이미지 | `raw.githubusercontent.com/…` | PNG는 raw로 정상 서빙됨 |
+| 링크 페이지 | `<user>.github.io/<repo>/linkinbio/` | **HTML은 raw로 안 됨** |
+
+raw는 HTML을 `content-type: text/plain` + `x-content-type-options: nosniff`로 내보내서, 브라우저가
+웹페이지로 렌더링하지 않고 소스를 글자로 보여줍니다. 그래서 링크 페이지만 GitHub Pages로 서빙합니다.
+Pages는 저장소 `Settings → Pages → Deploy from a branch → main / (root)`로 켭니다.
+
+> 저장소 최상위에 `index.html`이 없으면 사이트 루트는 404가 납니다. **정상입니다** —
+> 필요한 것은 `/linkinbio/` 경로뿐입니다.
 
 ---
 

@@ -69,3 +69,20 @@ fi
 # ── 4. 발행 ─────────────────────────────────────────────────
 echo "④ 인스타그램 발행"
 ./run.sh --run-id "$RUN_ID" "$@"
+echo
+
+# ── 5. 링크인바이오 반영 ────────────────────────────────────
+# 링크인바이오 페이지는 '발행 이력'에서 만들어지므로 ④가 끝나야 최신이 된다.
+# ②의 push는 그 전이라, 여기서 한 번 더 올리지 않으면 공개 페이지가 한 실행 뒤처진다.
+echo "⑤ 링크인바이오 페이지 반영"
+(
+  cd "$OUT_DIR"
+  git add -A
+  if git diff --cached --quiet; then
+    echo "  변경 없음"
+  else
+    git commit -q -m "링크인바이오 갱신: $RUN_ID"
+    git push -q origin main
+    echo "  push 완료"
+  fi
+)
