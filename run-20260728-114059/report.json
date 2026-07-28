@@ -1,0 +1,45 @@
+{
+  "run_id": "run-20260728-114059",
+  "status": "success",
+  "mode": "dry-run",
+  "source": "csv",
+  "started_at": "2026-07-28T11:40:59+09:00",
+  "collected": 1,
+  "skipped_duplicate": 0,
+  "processed": 1,
+  "published": 0,
+  "failed": 0,
+  "error": null,
+  "items": [
+    {
+      "article_url": "https://www.socialimpactnews.net/news/articleView.html?idxno=6873",
+      "status": "dry_run",
+      "media_id": null,
+      "permalink": null,
+      "detail": "카드 6장 생성, 계정 태그 1건 예정, 실제 발행 생략",
+      "title": "[인터뷰] 세상을 빨리 바꾸려던 마음이 ‘오래 노력하는 힘’이 되기까지",
+      "headline": "“7년이면 30%는\n쓸 줄 알았어요”",
+      "cards": 6
+    }
+  ],
+  "unmatched_entities": [
+    "기후 액막이",
+    "꽃마리협동조합",
+    "모어포모레",
+    "새로움",
+    "쓰레기 대란",
+    "자활센터",
+    "트렌디하다",
+    "품질"
+  ],
+  "resolved_accounts": [],
+  "overridden": [
+    "SIN6873"
+  ],
+  "linkinbio_page": "/Users/yg/소셜임팩트뉴스 인스타그램 자동화 업로드/out/linkinbio/index.html",
+  "warnings": [
+    "ANTHROPIC_API_KEY가 없어 폴백 요약으로 실행했습니다. 기사에 있는 사실만 커버로 끌어올리므로 모집·공모 기사 외에는 헤드라인이 기사 제목에 가깝습니다."
+  ],
+  "out_dir": "/Users/yg/소셜임팩트뉴스 인스타그램 자동화 업로드/out/run-20260728-114059",
+  "exit_code": 0
+}
