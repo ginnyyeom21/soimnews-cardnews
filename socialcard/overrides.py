@@ -57,7 +57,8 @@ class OverrideBook:
         row = self.rows[key]
         changed: List[str] = []
         for field in FIELDS:
-            value = (row.get(field) or "").strip()
+            # CSV 한 칸에 실제 줄바꿈을 넣기 어려우므로 '\n' 두 글자로 적게 하고 여기서 되돌린다.
+            value = (row.get(field) or "").replace("\\n", "\n").strip()
             if not value or value == getattr(cardnews, field):
                 continue
             setattr(cardnews, field, value)

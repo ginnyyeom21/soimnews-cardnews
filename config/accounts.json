@@ -11,14 +11,23 @@
       "name": "소셜임팩트뉴스",
       "handle": "soimnews",
       "kind": "org",
-      "aliases": ["소셜임팩트뉴스=", "SocialImpactNews", "소임뉴"],
+      "aliases": [
+        "소셜임팩트뉴스=",
+        "SocialImpactNews",
+        "소임뉴"
+      ],
       "source": "발행 대상 계정(운영자 확인)"
     },
     {
       "name": "열고닫기",
       "handle": "opcl.official",
       "kind": "org",
-      "aliases": ["도도한콜라보", "도도한콜라보㈜", "도도한콜라보(주)", "열고닫기 페이지"],
+      "aliases": [
+        "도도한콜라보",
+        "도도한콜라보㈜",
+        "도도한콜라보(주)",
+        "열고닫기 페이지"
+      ],
       "source": "https://www.instagram.com/opcl.official/",
       "note": "도도한콜라보가 운영하는 청년정책 플랫폼 계정(운영자 지정)"
     },
@@ -26,64 +35,110 @@
       "name": "수퍼빈",
       "handle": "superbin_official",
       "kind": "org",
-      "aliases": ["SuperBin", "수퍼빈(주)"],
+      "aliases": [
+        "SuperBin",
+        "수퍼빈(주)"
+      ],
       "source": "https://www.instagram.com/superbin_official/"
     },
     {
       "name": "헬로우뮤지움",
       "handle": "hellomuseum",
       "kind": "org",
-      "aliases": ["헬로우뮤지움 어린이미술관", "HELLOMUSEUM"],
+      "aliases": [
+        "헬로우뮤지움 어린이미술관",
+        "HELLOMUSEUM"
+      ],
       "source": "https://www.instagram.com/hellomuseum/"
     },
     {
       "name": "MYSC",
       "handle": "mysc.official",
       "kind": "org",
-      "aliases": ["엠와이소셜컴퍼니", "엠와이소셜컴퍼니(주)"],
+      "aliases": [
+        "엠와이소셜컴퍼니",
+        "엠와이소셜컴퍼니(주)"
+      ],
       "source": "https://www.instagram.com/mysc.official/"
     },
     {
       "name": "월드비전",
       "handle": "worldvisionkorea",
       "kind": "org",
-      "aliases": ["한국월드비전", "World Vision"],
+      "aliases": [
+        "한국월드비전",
+        "World Vision"
+      ],
       "source": "https://www.instagram.com/worldvisionkorea/"
     },
     {
       "name": "제주창조경제혁신센터",
       "handle": "jeju_ccei",
       "kind": "org",
-      "aliases": ["제주센터", "제주창조경제혁신센터(제주CCEI)"],
+      "aliases": [
+        "제주센터",
+        "제주창조경제혁신센터(제주CCEI)"
+      ],
       "source": "https://www.instagram.com/jeju_ccei/"
     },
     {
       "name": "제주공익활동지원센터",
       "handle": "jejugongik",
       "kind": "org",
-      "aliases": ["제주공익활동지원센터(제주NPO)", "제주NPO센터"],
+      "aliases": [
+        "제주공익활동지원센터(제주NPO)",
+        "제주NPO센터"
+      ],
       "source": "https://www.instagram.com/jejugongik/"
     },
     {
       "name": "사회적가치연구원",
       "handle": "cses.official",
       "kind": "org",
-      "aliases": ["CSES", "SK 사회적가치연구원"],
+      "aliases": [
+        "CSES",
+        "SK 사회적가치연구원"
+      ],
       "source": "https://www.instagram.com/cses.official/"
     },
     {
       "name": "현신경영연구소",
       "handle": "bkim_dia",
       "kind": "org",
-      "aliases": ["김별이"],
+      "aliases": [
+        "김별이"
+      ],
       "source": "https://www.instagram.com/bkim_dia/"
     },
-     {
+    {
       "name": "빅이슈코리아",
       "handle": "bigissuekorea",
       "kind": "org",
-      "aliases": ["빅이슈", "홈리스"],
+      "aliases": [
+        "빅이슈",
+        "홈리스"
+      ],
       "source": "https://www.instagram.com/bigissuekorea/"
+    },
+    {
+      "name": "빠띠",
+      "handle": "campaigns.do",
+      "kind": "org",
+      "aliases": [
+        "사회적협동조합 빠띠",
+        "팩트체크넷"
+      ],
+      "source": "운영자 확인"
+    },
+    {
+      "name": "모레상점",
+      "handle": "more.dayaftertomorrow",
+      "kind": "org",
+      "aliases": [
+        "임팩토리얼",
+        "주식회사 임팩토리얼"
+      ],
+      "source": "운영자 확인"
     }
   ]
 }

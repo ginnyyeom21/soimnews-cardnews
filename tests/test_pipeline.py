@@ -585,7 +585,8 @@ class TestLinkInBio(PipelineTestCase):
                 dry_run=False, run_id="link01",
             )
 
-        page = self.settings.out_dir / "linkinbio" / "index.html"
+        # 자체 도메인을 붙이면 저장소 이름이 경로에서 사라지므로 페이지는 최상위에 둔다.
+        page = self.settings.out_dir / "index.html"
         self.assertTrue(page.exists(), "실행 후 링크 페이지가 생성되어야 한다")
         html_text = page.read_text(encoding="utf-8")
 

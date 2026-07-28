@@ -167,8 +167,16 @@ def layout(
     font,
     max_width: float,
 ) -> Tuple[List[str], float]:
-    """조판 결과와 가장 긴 줄의 폭을 함께 돌려준다."""
+    """조판 결과와 가장 긴 줄의 폭을 함께 돌려준다.
+
+    줄바꿈 문자가 들어 있으면 그 위치는 그대로 지킨다. 자동 조판이 좋은 지점을 찾지만
+    커버 문구처럼 편집자가 호흡을 직접 정하고 싶을 때가 있어 남겨둔 통로다.
+    """
     measure = measure_with(draw, font)
-    lines = balance(wrap_text(text, measure, max_width))
+    lines: List[str] = []
+    for part in str(text or "").split("\n"):
+        part = part.strip()
+        if part:
+            lines.extend(balance(wrap_text(part, measure, max_width)))
     widest = max((measure(line) for line in lines), default=0.0)
     return lines, widest

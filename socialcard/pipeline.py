@@ -231,7 +231,7 @@ def run_pipeline(
             report.status = "success"
 
         # 프로필 바이오에 걸어둘 랜딩 페이지를 최신 발행 목록으로 다시 만든다.
-        page = write_linkinbio(settings, store, settings.out_dir / "linkinbio")
+        page = write_linkinbio(settings, store)
         if page is not None:
             report.linkinbio_page = str(page)
 

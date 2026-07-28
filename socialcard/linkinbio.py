@@ -150,7 +150,9 @@ def build_page(entries: List[Dict[str, Any]], settings: Settings) -> str:
 
 def write_page(settings: Settings, store: Store, out_dir: Optional[Path] = None) -> Optional[Path]:
     """링크인바이오 페이지를 파일로 쓰고 경로를 돌려준다."""
-    out_dir = out_dir or (settings.out_dir / "linkinbio")
+    # 저장소 최상위에 둔다. 자체 도메인을 붙이면 저장소 이름이 경로에서 사라지므로
+    # 페이지가 도메인 루트가 되고, 프로필에 거는 주소가 가장 짧아진다.
+    out_dir = out_dir or settings.out_dir
     try:
         entries = collect_entries(store, settings.linkinbio_limit)
         out_dir.mkdir(parents=True, exist_ok=True)
