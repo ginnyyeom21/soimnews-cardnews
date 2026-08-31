@@ -171,7 +171,62 @@ def _quote_indent(
     closed = head.count(opener) % 2 == 0 if opener == closer else closer in head
     if closed:
         return 0.0
-    return draw.textlength(opener, font=font)
+    return _align_shift(draw, head, opener, font)
+
+
+_ink_cache = {}
+
+
+def _ink_offset(font: ImageFont.FreeTypeFont, ch: str) -> int:
+    """글자를 그렸을 때 잉크가 실제로 시작하는 x 오프셋.
+
+    글자마다 좌측 여백이 달라 같은 x에 그려도 왼쪽 끝이 몇 픽셀씩 어긋난다.
+    '폐'는 3px, '시'는 0px이라 두 줄의 첫 글자가 나란히 보이지 않았다.
+    textbbox나 font.getbbox는 이 값을 정확히 주지 못해(둘 다 0/-1을 돌려준다)
+    글자를 한 번 그려서 직접 잰다. 결과는 (폰트, 글자)로 캐시한다.
+    """
+    if not ch:
+        return 0
+    # id(font)를 키로 쓰면 폰트가 해제됐을 때 다른 폰트가 같은 id를 물려받아
+    # 엉뚱한 오프셋이 나온다. 파일과 크기로 잡아둔다.
+    key = (getattr(font, "path", ""), font.size, ch)
+    if key in _ink_cache:
+        return _ink_cache[key]
+    pad = 20
+    size = int(font.size * 2) + pad * 2
+    probe = Image.new("L", (size, size), 0)
+    ImageDraw.Draw(probe).text((pad, pad), ch, font=font, fill=255)
+    px = probe.load()
+    offset = 0
+    for col in range(size):
+        if any(px[col, row] > 10 for row in range(size)):
+            offset = col - pad
+            break
+    _ink_cache[key] = offset
+    return offset
+
+
+def _align_shift(
+    draw: ImageDraw.ImageDraw,
+    head: str,
+    prefix: str,
+    font: ImageFont.FreeTypeFont,
+) -> float:
+    """head에서 prefix 바로 뒤 글자에, 이어지는 줄의 첫 글자를 맞출 밀기 폭.
+
+    맞춰야 할 목표는 x가 아니라 첫 줄의 그 글자다. 그래서 두 가지를 함께 셈한다.
+    첫 줄은 x에서 제 잉크만큼 왼쪽에 그려지므로 그 보정을 되돌리고(-), 목표 글자가
+    가진 잉크만큼은 도로 밀어야(+) 두 글자의 왼쪽 끝이 세로로 겹친다.
+    prefix 폭만 재던 예전 방식은 이 둘을 빠뜨려 2~3px씩 어긋났다.
+
+    prefix가 head의 앞부분이 아니면 맞출 글자를 특정할 수 없으니 폭만 쓴다.
+    """
+    ref = head[len(prefix): len(prefix) + 1] if head.startswith(prefix) else ""
+    return (
+        draw.textlength(prefix, font=font)
+        - _ink_offset(font, head[:1])
+        + _ink_offset(font, ref)
+    )
 
 
 def _draw_lines(
@@ -185,13 +240,16 @@ def _draw_lines(
     x, y = xy
     step = int(font.size * line_gap)
     indent = _quote_indent(draw, lines, font)
-    opener = lines[0][0] if lines and lines[0][:1] in OPENERS else ""
+    # 기준 줄. 첫 줄에도 마커가 붙어 있으면 떼고 본다. 마커는 그리지 않는 표시라
+    # 그대로 두면 '['를 첫 글자로 잡아 맞출 글자를 잘못 고른다.
+    head = _ALIGN_MARK.sub("", lines[0]) if lines else ""
+    opener = head[0] if head[:1] in OPENERS else ""
     for i, line in enumerate(lines):
         shift = 0.0
         mark = _ALIGN_MARK.match(line)
         if mark:
             # [[앞말]]: 그 앞말의 폭만큼 밀되 글자는 그리지 않는다.
-            shift = draw.textlength(mark.group(1), font=font)
+            shift = _align_shift(draw, head, mark.group(1), font)
             line = line[mark.end():]
         elif i and line[:1] in (" ", "\u3000"):
             # 편집자가 앞에 공백을 넣었다면 "따옴표 뒤 글자에 맞춰라"는 뜻으로 읽는다.
@@ -200,11 +258,15 @@ def _draw_lines(
             # 않으면 편집자가 넣은 공백을 그대로 존중한다.
             blank = line[: len(line) - len(line.lstrip(" \u3000"))]
             line = line.lstrip(" \u3000")
-            shift = draw.textlength(opener, font=font) if opener else draw.textlength(blank, font=font)
+            shift = (
+                _align_shift(draw, head, opener, font)
+                if opener
+                else draw.textlength(blank, font=font)
+            )
         elif i and not line.startswith(OPENERS):
             # 따옴표로 다시 시작하는 줄은 그 자체로 첫 글자가 따옴표라 밀지 않는다.
             shift = indent
-        draw.text((x + shift, y), line, font=font, fill=fill)
+        draw.text((x + shift - _ink_offset(font, line[:1]), y), line, font=font, fill=fill)
         y += step
     return y
 
