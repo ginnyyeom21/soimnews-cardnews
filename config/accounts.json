@@ -577,6 +577,31 @@
       ],
       "source": "운영자 확인",
       "note": "공익활동가를 지원하는 사회적협동조합."
+    },
+    {
+      "name": "서은덕",
+      "handle": "corners_duk",
+      "kind": "person",
+      "aliases": [
+        "서 대표"
+      ],
+      "source": "https://www.socialimpactnews.net/news/articleView.html?idxno=7376"
+    },
+    {
+      "name": "구석으로부터",
+      "handle": "from_the_corner",
+      "kind": "org",
+      "aliases": [],
+      "source": "운영자 확인 2026-09-15"
+    },
+    {
+      "name": "늘픔가치",
+      "handle": "with_np",
+      "kind": "org",
+      "aliases": [
+        "사단법인 늘픔가치"
+      ],
+      "source": "운영자 확인 2026-09-25"
     }
   ]
 }
