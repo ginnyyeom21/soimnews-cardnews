@@ -1069,22 +1069,49 @@ if __name__ == "__main__":
 
 
 class TestQuoteIndent(unittest.TestCase):
-    """인용이 다음 줄로 이어질 때만 둘째 줄부터 따옴표 폭만큼 민다."""
+    """인용이 다음 줄로 이어질 때만, 첫 줄의 따옴표 ‘다음 글자’에 맞춰 민다."""
 
     def _draw(self) -> Any:
         from PIL import Image, ImageDraw
 
         return ImageDraw.Draw(Image.new("RGB", (10, 10)))
 
-    def test_open_quote_indents_following_lines(self) -> None:
-        from socialcard.render import _quote_indent, load_font
+    def _first_ink_column(self, image: Any) -> int:
+        """그려진 글자의 잉크가 처음 나타나는 x. 없으면 -1."""
+        px = image.load()
+        width, height = image.size
+        for col in range(width):
+            if any(px[col, row] > 10 for row in range(height)):
+                return col
+        return -1
 
-        draw, font = self._draw(), load_font("bold", 76)
+    def test_open_quote_indents_following_lines(self) -> None:
+        """둘째 줄 첫 글자의 왼쪽 끝이 첫 줄 ‘다’의 왼쪽 끝과 같은 x에 온다.
+
+        따옴표 폭만큼만 밀던 예전 방식은 글자마다 좌측 여백이 달라 어긋났다.
+        ‘“’는 7px, ‘다’는 6px이라 1px 밀렸다. 픽셀을 직접 재서 확인한다.
+        """
+        from PIL import Image, ImageDraw
+        from socialcard.render import _draw_lines, _ink_offset, load_font
+
+        font = load_font("bold", 76)
         lines = ["“다 괜찮아졌다고", "생각했어요”"]
-        # 공백 폭으로는 맞출 수 없다. 여는 큰따옴표 폭 그대로여야 글자가 세로로 맞는다.
-        self.assertAlmostEqual(
-            _quote_indent(draw, lines, font), draw.textlength("“", font=font)
-        )
+        x, y, step = 40, 20, int(76 * 1.45)
+
+        block = Image.new("L", (900, 320), 0)
+        _draw_lines(ImageDraw.Draw(block), lines, (x, y), font, 255)
+        second = self._first_ink_column(block.crop((0, y + step, 900, 320)))
+
+        # 첫 줄은 x - ink(‘“’) 에 그려지므로, 그 안에서 ‘다’가 놓이는 펜 위치는
+        # 거기에 따옴표 폭을 더한 자리다. 같은 자리에 ‘다…’만 그려 왼쪽 끝을 잰다.
+        ref = Image.new("L", (900, 320), 0)
+        ref_draw = ImageDraw.Draw(ref)
+        pen = x - _ink_offset(font, "“") + ref_draw.textlength("“", font=font)
+        ref_draw.text((pen, 0), lines[0][1:], font=font, fill=255)
+        target = self._first_ink_column(ref)
+
+        self.assertNotEqual(second, -1)
+        self.assertEqual(second, target)
 
     def test_quote_closed_on_first_line_is_not_indented(self) -> None:
         """‘엄마의 그림책’처럼 첫 줄에서 닫히면 인용이 아니라 낱말 표시다."""
