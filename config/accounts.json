@@ -601,6 +601,69 @@
         "사단법인 늘픔가치"
       ],
       "source": "운영자 확인 2026-09-25"
+    },
+    {
+      "name": "베이크",
+      "handle": "hellovake",
+      "kind": "org",
+      "aliases": [
+        "VAKE"
+      ],
+      "source": "운영자 확인 2026-10-07, 태그 수용 확인"
+    },
+    {
+      "name": "시스플래닛",
+      "handle": "sysplanet",
+      "kind": "org",
+      "aliases": [],
+      "source": "운영자 확인 2026-10-07, 태그 수용 확인"
+    },
+    {
+      "name": "페이스 드로잉 성수",
+      "handle": "fdseongsu.official",
+      "kind": "org",
+      "aliases": [
+        "페이스 드로잉 성수 2026",
+        "FACE DRAWING SEONG-SU"
+      ],
+      "source": "운영자 확인 2026-10-07, 태그 수용 확인"
+    },
+    {
+      "name": "은나래",
+      "handle": "narae.eun",
+      "kind": "person",
+      "aliases": [],
+      "source": "운영자 확인 2026-10-07, 태그 수용 확인"
+    },
+    {
+      "name": "릭킴",
+      "handle": "reeccu",
+      "kind": "person",
+      "aliases": [
+        "Rick Kim",
+        "릭킴(Rick Kim)"
+      ],
+      "source": "운영자 확인 2026-10-07, 태그 수용 확인"
+    },
+    {
+      "name": "임팩트스퀘어",
+      "handle": "sangsangplanet",
+      "kind": "org",
+      "aliases": [
+        "KT&G 상상플래닛",
+        "상상플래닛"
+      ],
+      "source": "운영자 확인 2026-10-07, 태그 수용 확인"
+    },
+    {
+      "name": "언더스탠드에비뉴",
+      "handle": "understand_social",
+      "kind": "org",
+      "aliases": [
+        "언더스탠드애비뉴",
+        "갤러리우아"
+      ],
+      "source": "운영자 확인 2026-10-07, 태그 수용 확인"
     }
   ]
 }

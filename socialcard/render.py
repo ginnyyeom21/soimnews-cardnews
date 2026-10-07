@@ -275,6 +275,21 @@ def _block_height(font: ImageFont.FreeTypeFont, lines: Sequence[str], line_gap: 
     return int(font.size * line_gap) * max(0, len(lines) - 1) + int(font.size * 1.2)
 
 
+def _lum(c: Sequence[int]) -> float:
+    r, g, b = (v / 255.0 for v in c[:3])
+    return 0.2126 * r + 0.7152 * g + 0.0722 * b
+
+
+def _on_color(bg: Sequence[int]) -> Tuple[int, int, int]:
+    """배경 위에 올릴 글자색. 밝은 배경에는 먹색, 어두운 배경에는 흰색.
+
+    커버 글자가 흰색으로 박혀 있어 브랜드색을 밝게 잡으면 글자가 사라졌다.
+    기존 브랜드색(#00A76B)은 어두운 쪽이라 흰색 그대로이고, 동작이 바뀌지 않는다.
+    """
+    r, g, b = (c / 255.0 for c in bg[:3])
+    return (20, 20, 20) if (0.2126 * r + 0.7152 * g + 0.0722 * b) > 0.55 else (255, 255, 255)
+
+
 def _gradient(size: int, top: Sequence[int], bottom: Sequence[int], height: Optional[int] = None) -> Image.Image:
     height = height or size
     image = Image.new("RGB", (size, height), tuple(top))
@@ -317,8 +332,13 @@ def _footer(
     accent,
     size: int,
     height: int,
+    bar_width: int = 4,
 ) -> None:
-    """구분선 + 바이라인 + 진행 표시. 캔버스 아래에 붙는다."""
+    """구분선 + 바이라인 + 진행 표시. 캔버스 아래에 붙는다.
+
+    bar_width는 진행 바 두께다. 네온색을 밝은 바탕에 올리면 4px로는 묻혀서,
+    밝은 바탕에서만 굵게 그린다.
+    """
     RULE_Y = height - RULE_FROM_BOTTOM
     FOOTER_Y = height - FOOTER_FROM_BOTTOM
     draw.line([(MARGIN, RULE_Y), (size - MARGIN, RULE_Y)], fill=rule_color, width=2)
@@ -337,7 +357,7 @@ def _footer(
 
     # 진행 바: 구분선 위에 현재 카드까지의 비율을 덧그린다.
     filled = int((size - MARGIN * 2) * (index / float(total)))
-    draw.line([(MARGIN, RULE_Y), (MARGIN + filled, RULE_Y)], fill=accent, width=4)
+    draw.line([(MARGIN, RULE_Y), (MARGIN + filled, RULE_Y)], fill=accent, width=bar_width)
 
 
 def render_cardnews(cardnews: CardNews, out_dir: Path, settings: Settings) -> List[Path]:
@@ -354,9 +374,22 @@ def render_cardnews(cardnews: CardNews, out_dir: Path, settings: Settings) -> Li
     ink = _hex_to_rgb(settings.ink_color)  # 차콜
     paper = _hex_to_rgb(settings.paper_color)
 
-    brand_deep = _shade(brand, 0.72)
-    mint = _mix(accent, (255, 255, 255), 0.45)
-    on_brand_muted = _mix(brand, (255, 255, 255), 0.62)
+    # 밝은 브랜드색에서 0.72까지 떨어뜨리면 아래쪽이 탁해진다. 거의 평평하게 둔다.
+    brand_deep = _shade(brand, 0.72 if _on_color(brand) == (255, 255, 255) else 0.96)
+    # 커버 글자색은 브랜드색 밝기에서 정한다. 어두우면 흰색이라 기존과 같다.
+    on_brand = _on_color(brand)
+    bar_w = 4 if on_brand == (255, 255, 255) else 9
+    # 본문 진행 바. 바탕과 밝기 차가 큰 쪽을 골라야 묻히지 않는다.
+    body_bar = brand if abs(_lum(brand) - _lum(paper)) >= abs(_lum(accent) - _lum(paper)) else accent
+    mint = _mix(accent, on_brand, 0.45)
+    # 아웃트로는 잉크색 위에 그린다. 커버용 색을 그대로 쓰면 밝은 브랜드색일 때
+    # 안내 문구가 검정 배경에 검정으로 찍혀 사라진다.
+    mint_on_ink = _mix(accent, _on_color(ink), 0.45)
+    # 커버 부제. 밝은 브랜드색 위에서는 액센트를 섞으면 탁해져, 먹색이 또렷하다.
+    # 어두운 브랜드색(기본값)에서는 기존대로 액센트를 섞은 색을 쓴다.
+    hook_fill = on_brand if on_brand == (20, 20, 20) else mint
+    # 밝은 바탕에서는 푸터 글씨도 먹색에 가깝게. 올리브빛으로 뜨면 읽기 어렵다.
+    on_brand_muted = _mix(brand, on_brand, 0.62 if on_brand == (255, 255, 255) else 0.85)
     ink_muted = _mix(ink, paper, 0.5)
     hairline = _mix(ink, paper, 0.88)
 
@@ -379,9 +412,14 @@ def render_cardnews(cardnews: CardNews, out_dir: Path, settings: Settings) -> Li
 
             chip_font = load_font("bold", 26)
             chip = (cardnews.article.section or "소셜임팩트").strip()
+            # 밝은 바탕에서는 액센트로 채운 배지가 또렷하다. 어두운 바탕(기본값)은
+            # 지금까지처럼 테두리만 두른 배지를 쓴다.
+            filled_chip = on_brand == (20, 20, 20)
             _pill(
                 draw, (MARGIN, 232), chip, chip_font,
-                fill=None, text_fill=mint, outline=mint,
+                fill=accent if filled_chip else None,
+                text_fill=_on_color(accent) if filled_chip else hook_fill,
+                outline=None if filled_chip else hook_fill,
             )
 
             # 제목과 부제를 합친 높이가 배지 아래 ~ 푸터 위 공간을 넘지 않도록 단계적으로 줄인다.
@@ -414,12 +452,14 @@ def render_cardnews(cardnews: CardNews, out_dir: Path, settings: Settings) -> Li
             # 세로가 길어졌을 때 늘어난 높이가 전부 위쪽 빈 공간으로 남는다.
             block_h = title_h + gap + hook_h
             block_top = top_limit + max(0, (RULE_Y - 52 - top_limit - block_h) // 2)
-            y = _draw_lines(draw, title_lines, (MARGIN, block_top), title_font, (255, 255, 255), 1.3)
+            y = _draw_lines(draw, title_lines, (MARGIN, block_top), title_font, on_brand, 1.3)
 
-            draw.rectangle([MARGIN, y + 32, MARGIN + 88, y + 38], fill=accent)
-            _draw_lines(draw, hook_lines, (MARGIN, y + gap), hook_font, mint, 1.55)
+            # 제목 밑 막대. 밝은 커버에서는 액센트가 바탕에 묻혀, 먹색으로 둔다.
+            draw.rectangle([MARGIN, y + 32, MARGIN + 88, y + 38],
+                           fill=on_brand if on_brand == (20, 20, 20) else accent)
+            _draw_lines(draw, hook_lines, (MARGIN, y + gap), hook_font, hook_fill, 1.55)
 
-            _footer(draw, settings, on_brand_muted, _mix(brand, brand_deep, 0.5), card.index, total, accent, size, height)
+            _footer(draw, settings, on_brand_muted, _mix(brand, brand_deep, 0.5), card.index, total, accent, size, height, bar_w)
 
         elif card.kind == "body":
             image = Image.new("RGB", (size, height), paper)
@@ -428,7 +468,7 @@ def render_cardnews(cardnews: CardNews, out_dir: Path, settings: Settings) -> Li
 
             label_font = load_font("bold", 27)
             label_right = _pill(
-                draw, (MARGIN, 158), card.title, label_font, fill=brand, text_fill=(255, 255, 255)
+                draw, (MARGIN, 158), card.title, label_font, fill=brand, text_fill=on_brand
             )
 
             if card.highlight:
@@ -453,7 +493,7 @@ def render_cardnews(cardnews: CardNews, out_dir: Path, settings: Settings) -> Li
             body_top = area_top + max(0, (area_bottom - area_top - block_h) // 2)
             _draw_lines(draw, body_lines, (MARGIN, body_top), body_font, ink, 1.62)
 
-            _footer(draw, settings, ink_muted, hairline, card.index, total, brand, size, height)
+            _footer(draw, settings, ink_muted, hairline, card.index, total, body_bar, size, height, bar_w)
 
         else:  # outro
             image = _gradient(size, _shade(ink, 1.02), _shade(ink, 0.78), height)
@@ -494,7 +534,7 @@ def render_cardnews(cardnews: CardNews, out_dir: Path, settings: Settings) -> Li
 
             for line in note_lines:
                 width = draw.textlength(line, font=note_font)
-                draw.text(((size - width) / 2, y), line, font=note_font, fill=mint)
+                draw.text(((size - width) / 2, y), line, font=note_font, fill=mint_on_ink)
                 y += int(note_font.size * 1.5)
             if note_lines:
                 y += 12
