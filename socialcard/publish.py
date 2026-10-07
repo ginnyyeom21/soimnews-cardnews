@@ -48,6 +48,10 @@ _TAG_ERROR_HINTS = (
 )
 
 
+# 인스타그램 캐러셀 한 건에 담을 수 있는 이미지 수. 2025년에 10장에서 20장으로 늘었다.
+CAROUSEL_MAX = 20
+
+
 def _looks_like_tag_error(message: str) -> bool:
     lowered = message.lower()
     return any(hint in lowered for hint in _TAG_ERROR_HINTS)
@@ -227,8 +231,14 @@ class GraphPublisher(Publisher):
             )
             creation_id = container["id"]
         else:
+            if len(image_urls) > CAROUSEL_MAX:
+                # 조용히 잘라내면 아웃트로가 사라진 걸 아무도 모른다. 로그로 남긴다.
+                log.warning(
+                    "카드 %d장 중 %d장만 올립니다(캐러셀 상한). %d장이 빠집니다.",
+                    len(image_urls), CAROUSEL_MAX, len(image_urls) - CAROUSEL_MAX,
+                )
             children: List[str] = []
-            for position, url in enumerate(image_urls[:10]):  # 캐러셀 최대 10장
+            for position, url in enumerate(image_urls[:CAROUSEL_MAX]):
                 params = {"image_url": url, "is_carousel_item": "true"}
                 # 태그는 커버(첫 장)에만 붙인다. 슬라이드마다 반복하면 알림만 중복된다.
                 child = self._create_media(params, user_tags if position == 0 else None)
