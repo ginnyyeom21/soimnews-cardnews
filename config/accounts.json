@@ -664,6 +664,64 @@
         "갤러리우아"
       ],
       "source": "운영자 확인 2026-10-07, 태그 수용 확인"
+    },
+    {
+      "name": "사단법인 시민",
+      "handle": "official_simin",
+      "kind": "org",
+      "aliases": [
+        "사단법인시민",
+        "시민"
+      ],
+      "source": "운영자 확인 2026-11-19, 태그 수용 확인"
+    },
+    {
+      "name": "방비홍",
+      "handle": "bihongbang",
+      "kind": "person",
+      "aliases": [
+        "디아더월드 방비홍"
+      ],
+      "source": "운영자 확인 2026-11-19, 태그 수용 확인"
+    },
+    {
+      "name": "김자유",
+      "handle": "jayu.kim",
+      "kind": "person",
+      "aliases": [
+        "누구나데이터 김자유"
+      ],
+      "source": "운영자 확인 2026-11-19, 태그 수용 확인"
+    },
+    {
+      "name": "옥스팜 코리아",
+      "handle": "oxfamkorea",
+      "kind": "org",
+      "aliases": [
+        "옥스팜"
+      ],
+      "source": "운영자 확인 2026-11-19, 태그 수용 확인"
+    },
+    {
+      "name": "SK행복나눔재단",
+      "handle": "skhappiness_org",
+      "kind": "org",
+      "aliases": [
+        "행복나눔재단",
+        "SK 뉴스쿨"
+      ],
+      "source": "운영자 확인 2026-11-19, 태그 수용 확인"
+    },
+    {
+      "name": "아산나눔재단",
+      "handle": "asannanum_official",
+      "kind": "org",
+      "aliases": [
+        "아산 프론티어 아카데미",
+        "아산프론티어아카데미",
+        "AFA"
+      ],
+      "source": "공식 홈페이지(asan-nanum.org) 링크 확인 2026-11-23, 태그 수용 확인"
     }
   ]
 }
