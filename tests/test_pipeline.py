@@ -819,6 +819,58 @@ class TestOverrides(PipelineTestCase):
         # 문구를 손대지 않았으므로 후킹 유형은 manual 이 아니다.
         self.assertNotEqual(cardnews.hook_type, "manual")
 
+    def test_badges_can_be_cleared_and_written(self) -> None:
+        """배지는 본문 첫 숫자를 자동으로 뽑는다. 뜻 없는 숫자가 걸리면 꺼야 한다.
+
+        2026-11-23 아리셀 카드에서 사망자 수 '52명'·'23명'이 배지로 떨어져
+        본문과 겉돌았다. 끄는 통로가 없어 기사를 통째로 접어야 했다.
+        """
+        from socialcard.overrides import load_overrides
+
+        cardnews = self._cardnews()
+        path = self._write([{
+            "article_id": cardnews.article.article_id,
+            "body_cards": "무슨 일이::84명을 뽑는다.|핵심은::12월 1일부터 받는다.|끝으로::달라진 게 많다.",
+            "badges": "-||2027년",
+        }])
+        self.assertEqual(
+            sorted(load_overrides(path).apply(cardnews)), ["badges", "body_cards"]
+        )
+        bodies = [c for c in cardnews.cards if c.kind == "body"]
+        self.assertEqual(bodies[0].highlight, "")  # '-' 는 배지를 뺀다
+        self.assertEqual(bodies[1].highlight, "12월 1일")  # 빈 칸은 자동 추출 그대로
+        self.assertEqual(bodies[2].highlight, "2027년")  # 적은 글자를 그대로 쓴다
+
+    def test_badges_align_with_cards_left_after_drop(self) -> None:
+        """배지는 drop_cards 다음에 매긴다. 편집자가 본 카드 순서와 맞아야 한다."""
+        from socialcard.overrides import load_overrides
+
+        cardnews = self._cardnews()
+        path = self._write([{
+            "article_id": cardnews.article.article_id,
+            "body_cards": "하나::84명을 뽑는다.|둘::12월 1일부터 받는다.|셋::97%가 취업했다.",
+            "drop_cards": "2",  # '하나' 카드를 뺀다(커버가 1번)
+            "badges": "-|직접 쓴 배지",
+        }])
+        load_overrides(path).apply(cardnews)
+        bodies = [c for c in cardnews.cards if c.kind == "body"]
+        self.assertEqual([c.title for c in bodies], ["둘", "셋"])
+        self.assertEqual(bodies[0].highlight, "")
+        self.assertEqual(bodies[1].highlight, "직접 쓴 배지")
+
+    def test_badges_column_absent_changes_nothing(self) -> None:
+        """컬럼을 안 쓰던 파일은 그대로 돌아야 한다."""
+        from socialcard.overrides import load_overrides
+
+        cardnews = self._cardnews()
+        path = self._write([{
+            "article_id": cardnews.article.article_id,
+            "body_cards": "무슨 일이::84명을 뽑는다.",
+        }])
+        self.assertEqual(load_overrides(path).apply(cardnews), ["body_cards"])
+        bodies = [c for c in cardnews.cards if c.kind == "body"]
+        self.assertEqual(bodies[0].highlight, "84명")
+
     def test_drop_cards_ignores_cover_and_outro(self) -> None:
         from socialcard.overrides import load_overrides
 
