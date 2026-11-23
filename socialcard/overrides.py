@@ -30,8 +30,14 @@ EXCLUDE = "exclude_tags"  # 이 기사에서만 태그하지 않을 계정(예: 
 # 본문 카드를 통째로 다시 쓰는 통로. '|'로 카드를 나누고, '::' 앞은 킥커(생략 가능).
 #   무슨 일이::협약을 맺었다.|핵심은::15개사를 뽑는다.
 BODY = "body_cards"
+# 킥커 옆 배지를 카드마다 지정한다. 본문 카드 순서대로 '|'로 잇는다.
+#   빈 칸이면 자동 추출 그대로, '-'면 배지를 빼고, 그 밖의 글자는 그대로 쓴다.
+#   예: "|-|2027년" → 1번은 자동, 2번은 없음, 3번은 '2027년'
+BADGES = "badges"
 # 캡션은 맨 뒤에 둔다. 이미 쓰던 파일에 컬럼을 끼워 넣으면 기존 줄이 밀린다.
-HEADER = ("article_id", "url", "headline", "hook", "read_more", BODY, DROP, EXCLUDE, "caption")
+HEADER = (
+    "article_id", "url", "headline", "hook", "read_more", BODY, DROP, EXCLUDE, BADGES, "caption"
+)
 
 
 class OverrideBook:
@@ -116,6 +122,32 @@ class OverrideBook:
                     card.index = i
                 changed.append(DROP)
 
+        # 배지는 본문 첫 숫자를 자동으로 뽑는데, 사망자 수처럼 떼어놓으면 뜻이
+        # 없거나 무신경해 보이는 숫자가 걸린다. 카드마다 끄거나 직접 쓰는 통로다.
+        # drop_cards 다음에 둬서, 편집자가 눈으로 본 본문 카드 순서와 맞춘다.
+        raw_badges = row.get(BADGES, "")
+        if raw_badges.strip():
+            from .summarize import MAX_HIGHLIGHT, _clip_phrase
+
+            bodies = [c for c in cardnews.cards if c.kind == "body"]
+            specs = raw_badges.split("|")
+            if len(specs) > len(bodies):
+                log.warning(
+                    "배지를 %d개 적었는데 본문 카드는 %d장입니다. 남는 것은 버립니다: %s",
+                    len(specs), len(bodies), cardnews.article.article_id,
+                )
+            touched = False
+            for card, spec in zip(bodies, specs):
+                spec = spec.strip()
+                if not spec:  # 빈 칸은 자동 추출을 그대로 둔다
+                    continue
+                want = "" if spec == "-" else _clip_phrase(spec, MAX_HIGHLIGHT)
+                if card.highlight != want:
+                    card.highlight = want
+                    touched = True
+            if touched:
+                changed.append(BADGES)
+
         # 계정 매핑은 그대로 두고 이 기사에서만 태그를 뺀다.
         excluded = [h.strip().lstrip("@") for h in row.get(EXCLUDE, "").split(",") if h.strip()]
         if excluded:
@@ -138,12 +170,12 @@ def load_overrides(path: Path) -> OverrideBook:
     with path.open(encoding="utf-8-sig", newline="") as fh:
         reader = csv.DictReader(fh)
         fields = set(reader.fieldnames or [])
-        if not fields & set(FIELDS + (BODY, DROP, EXCLUDE)):
+        if not fields & set(FIELDS + (BODY, DROP, EXCLUDE, BADGES)):
             log.warning("덮어쓰기 파일에 %s 컬럼이 없습니다: %s", "/".join(FIELDS), path)
             return OverrideBook()
         for raw in reader:
             row = {k: (v or "").strip() for k, v in raw.items() if k}
-            if not any(row.get(f) for f in FIELDS + (BODY, DROP, EXCLUDE)):
+            if not any(row.get(f) for f in FIELDS + (BODY, DROP, EXCLUDE, BADGES)):
                 continue  # 값이 하나도 없는 줄은 아직 안 채운 템플릿이다
             for key in (row.get("url"), row.get("article_id")):
                 if key:
